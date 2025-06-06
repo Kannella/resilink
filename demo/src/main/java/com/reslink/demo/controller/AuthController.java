@@ -1,5 +1,6 @@
 package com.reslink.demo.controller;
 
+import com.reslink.demo.dto.AuthResponseDto;
 import com.reslink.demo.dto.LoginRequestDto;
 import com.reslink.demo.dto.LoginResponseDto;
 import com.reslink.demo.dto.RegistrationRequestDto;
@@ -25,26 +26,25 @@ public class AuthController {
     @Autowired
     private RegistrationService registrationService;
 
-    // --- Endpoint de Registro ---
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody RegistrationRequestDto registrationRequest) {
+    // Mude a assinatura do método de login
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequest) {
         try {
-            User newUser = registrationService.registerNewUser(registrationRequest);
-            String responseMessage = "Usuário registrado com sucesso! ID: " + newUser.getId();
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseMessage);
+            String token = loginService.loginAndGetToken(loginRequest); // Método do serviço vai mudar
+            return ResponseEntity.ok(new AuthResponseDto(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    // --- Endpoint de Login ---
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequest) {
+    // O método de registro pode permanecer o mesmo, mas vamos usar o AuthResponseDto também
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDto> registerUser(@Valid @RequestBody RegistrationRequestDto request) {
         try {
-            LoginResponseDto response = loginService.login(loginRequest);
-            return ResponseEntity.ok(response);
+            String token = registrationService.registerNewUserAndGetToken(request); // Método do serviço vai mudar
+            return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponseDto(token));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Retorna 401 para falha de login
+            return ResponseEntity.badRequest().body(null);
         }
     }
 }
