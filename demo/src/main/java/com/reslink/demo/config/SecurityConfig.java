@@ -28,11 +28,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Rotas públicas
                         .requestMatchers("/api/auth/**", "/api/alerts/**", "/h2-console/**").permitAll()
-                        // Rotas que exigem autenticação
-                        .requestMatchers("/api/user-alerts/**").authenticated()
-                        // Qualquer outra rota não especificada também exigirá autenticação
+                        // UNA AS DUAS REGRAS DE AUTENTICAÇÃO
+                        .requestMatchers("/api/user-alerts/**", "/api/help-requests/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
